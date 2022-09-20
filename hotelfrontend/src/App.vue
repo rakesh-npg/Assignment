@@ -1,7 +1,10 @@
 <template>
   <v-app>
-    <HotelTable/>
-    <CustomerTable/>
+    <router-view></router-view>
+    <router-link to="/Customer">Customer</router-link>
+    <router-link to="/Hotel">Hotel</router-link>
+    <!-- <HotelTable/>
+    <CustomerTable/> -->
     <v-main>
     </v-main>
   </v-app>
@@ -9,14 +12,14 @@
 
 <script>
 
-import HotelTable from './components/HotelTable.vue';
-import CustomerTable from './components/CustomerTable.vue';
+// import HotelTable from './components/HotelTable.vue';
+// import CustomerTable from './components/CustomerTable.vue';
 export default {
   name: 'App',
 
   components: {
-    HotelTable,
-    CustomerTable,
+    // HotelTable,
+    // CustomerTable,
 },
 
   data: () => ({

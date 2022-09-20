@@ -1,18 +1,39 @@
 <template>
     <div>
+        <SearchBox @searchEmitPop="searchFunc"/>
+
         <v-btn @click="(() => flagData.formFlag = true)">New Entry</v-btn>
 
         <v-simple-table>
             <thead>
                 <tr>
                    <th
-                   v-for="head in tableHeaders" :key="head">{{head}}</th>
+                   v-for="(head, i) in tableHeaders" :key="head">
+                   {{head}}
+                   <template v-if="head != 'edit/delete'">
+                        <v-icon small @click="sortData(i, head)">{{sortIconFlagDisplay(i)}}</v-icon>
+                   </template>
+                    </th>
                 </tr>
             </thead>
+            <tbody>
+                <tr
+                v-for="data in tableData" :key="data.id">
+                    <td v-for="column in tableHeaders" :key="column">
+                    
+                        {{data[column]}}
+
+                    <template v-if="column == 'edit/delete'">
+                        <v-icon small @click="editData(data)">mdi-pencil</v-icon>
+                        <v-icon small @click="deleteData(data)">mdi-delete</v-icon>
+                    </template>
+                </td>
+                </tr>
+            </tbody>
 
         </v-simple-table>
 
-        <v-dialog v-model="flagData.formFlag">   
+        <v-dialog v-model="flagData.formFlag" @click:outside="clickOut">   
             <v-card>
                     <v-card-title class="text-h5 grey lighten-2">
                     New Entry 
@@ -57,7 +78,7 @@
                         </v-text-field>
 
                         <v-text-field 
-                        v-model="formData.customerID"  
+                        v-model="formData.customerId"  
                         label="customer ID"
                         >
                         </v-text-field>
@@ -74,6 +95,8 @@
 
                 </v-card>
             </v-dialog> 
+
+          
         
     </div>
 </template>
@@ -83,40 +106,92 @@
 import Vue from 'vue';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
+import SearchBox from './SearchBox.vue';
 Vue.use(VueAxios, axios)
 
 export default{
     data() {
         return {
-            formData:{
-                id: "", 
-                hotelName: "", 
-                hotelDoorno: "", 
-                hotelLandmark: "", 
-                hotelPincode: "", 
-                cusomterId: "", 
-            }, 
+            formData: {
+                id: "",
+                hotelName: "",
+                hotelDoorno: "",
+                hotelLandmark: "",
+                hotelPincode: "",
+                cusomterId: "",
+            },
             flagData: {
                 editForm: false,
-                formFlag: false,  
-            }, 
-            tableHeaders: ["id", "address", "customerId"]
-
-        }
-    }, 
+                formFlag: false,
+                sortArrow: [false, false, false],
+            },
+            tableHeaders: ["id", "address", "customerId", "edit/delete"],
+            tableData: [
+                {
+                    "id": 1,
+                    "address": "test",
+                    "customerId": 2
+                },
+                {
+                    "id": 2,
+                    "address": "test",
+                    "customerId": 4
+                }
+            ]
+        };
+    },
     methods: {
         async validateForm() {
-            this.$refs.form.validate() 
-            await axios.post('http://127.0.0.1:3333/hotel/create', this.formData)
-            .then((resposne) => console.log(resposne))
+            this.$refs.form.validate();
+            console.log("vlaidation done");
+            // await axios.post('http://127.0.0.1:3333/hotel/create', this.formData)
+            // .then((resposne) => console.log(resposne))
+            this.$refs.form.reset();
+        },
+        async editForm() {
+            this.$refs.form.validate();
+            console.log("edition done");
+            // await axios.post('http://127.0.0.1:3333/hotel/update', this.formData)
+            // .then((resposne) => console.log(resposne))
+            this.$refs.form.reset();
+            this.flagData.formFlag = false;
+            this.flagData.editForm = false;
+        },
+        async sortData(i, head) {
+            // let sortType = this.flagData.sortArrow[i] ? 'desc' : 'asc'
+            // let tempData = {
+            //     sortType: sortType, 
+            //     col: head
+            // } 
+            //send here 
+            console.log("sortData", head, i);
+            console.log(this.flagData.sortArrow[i]);
+            this.flagData.sortArrow[i] = !this.flagData.sortArrow[i];
         },
 
-        async editForm() {
-            this.$refs.form.validate() 
-            await axios.post('http://127.0.0.1:3333/hotel/create', this.formData)
-            .then((resposne) => console.log(resposne))
-        }
-    }, 
+        async searchFunc(data){
+            console.log(data)
+        }, 
+        
+        editData(data) {
+            console.log("workinf");
+            this.formData = data;
+            this.flagData.formFlag = true;
+            this.flagData.editForm = true;
+        },
+        sortIconFlagDisplay(flag) {
+            if (this.flagData.sortArrow[flag])
+                return "mdi-arrow-down";
+            else
+                return "mdi-arrow-up";
+        },
+        clickOut() {
+            this.$refs.form.reset();
+            this.flagData.editForm = false;
+            this.flagData.formFlag = false;
+        },
+    },
+    components: { SearchBox }
 }
 
 </script>
