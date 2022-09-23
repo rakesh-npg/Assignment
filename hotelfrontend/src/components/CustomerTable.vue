@@ -18,10 +18,10 @@
             </thead>
             <tbody>
                 <tr
-                v-for="data in tableData" :key="data.id">
+                v-for="data in tableData" :key="data.row_to_json.id">
                     <td v-for="column in tableHeaders" :key="column">
                     
-                        {{data[column]}}
+                        {{data.row_to_json[column]}}
 
                     <template v-if="column == 'edit/delete'">
                         <v-icon small @click="editData(data)">mdi-pencil</v-icon>
@@ -100,16 +100,6 @@ export default{
             }, 
             tableHeaders: ["table_id", "customer_id", "customer_name", "count", "edit/delete"], 
             tableData: [
-                {
-                    "customer_id": 1,  
-                    "customer_name": "James", 
-    
-                }, 
-                {
-                    "customer_id":2, 
-                    "customer_name": "John", 
-                
-                }
             ]
 
         }
@@ -155,11 +145,11 @@ export default{
         },
         async sortData(i, head) {
             let sortType = this.flagData.sortArrow[i] ? 'desc' : 'asc'
-            console.log(sortType)
             let tempData = {
                 sortType: sortType, 
                 col: head
             } 
+            console.log(tempData)
             await axios.post('http://127.0.0.1:3333/cust/sort', tempData).then((resposne) => {
                 console.log(resposne)
                 this.tableData = resposne.data 

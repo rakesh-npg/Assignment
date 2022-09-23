@@ -133,7 +133,7 @@ export default{
                 formFlag: false,
                 sortArrow: [false, false, false],
             },
-            tableHeaders: ["id","name", "address", "customerId","customerName", "edit/delete"],
+            tableHeaders: ["id","hotel_name", "address", "customer_id","customerName", "edit/delete"],
             tableData: [
             ]
         };

@@ -2,6 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Customer from 'App/Models/Customer'
 import CustomerValidator from 'App/Validators/CustomerValidator'
+import Hotel from 'App/Models/Hotel'
 
 
 export default class CustomersController {
@@ -10,7 +11,6 @@ export default class CustomersController {
         const payload = await request.validate(CustomerValidator)
         console.log('validation working')
         const newCustomer = new Customer() 
-        newCustomer.customer_name = payload.customerName
         newCustomer.customer_id = payload.customerId
         await newCustomer.save()
         let data = this.test() 
@@ -83,7 +83,7 @@ export default class CustomersController {
     public async search({request}:HttpContextContract) {
         let test = request.input('searchVal')
         console.log(test)
-        return await Database
+        let a =  await Database
         .from((subquery) =>{
             subquery
         .from((query) =>
@@ -96,22 +96,23 @@ export default class CustomersController {
         .as('query')
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
         .as('subquery')
-        }).select('*')
+        }).select('subquery.*')
         .where((query) => {
-            if(/\d/.test(test)){
-            query.where('customer_id', test)
-            }
+           if(/\d/.test(test)){
+                query.where('table_id', test)
+                
+           }
         })
         .orWhere((query) => {
-            query.where('customer_name','ilike',"%"+test)
+            query.whereILike('customer_name',`%${test}%`)
         
         })
+        console.log(a)
 
     }
 
     public async sort({request}: HttpContextContract) {
         let type = request.input('sortType')
-        console.log(type)
         let column = request.input('col')
         return await Database
         .from((subquery) =>{
@@ -127,24 +128,45 @@ export default class CustomersController {
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
         .as('subquery')
         }).select('*')
-        //.orderBy('customer_name', 'asc')
         
         .orderBy(`${column}`, `${type}`)
     }
 
     public async test() {
-        return await Database
-        .from((query) =>
-        query
-        .from('customers')
-        .join('hotels', 'customers.customer_id', 'hotels.customer_id')
-        .select('customers.*')
-        .count('customers.customer_id')
-        .groupBy('customers.customer_id','customers.table_id')
-        .as('query')
-        ) //.join('customers', 'query.customer_id', 'customers.customer_id')
-        
 
-    }
+        return await Database.rawQuery(
+
+''
+        )
+//         return await Database.rawQuery(
+// 'select (select row_to_json(address) from (select hotels.hotel_landmark, hotels.hotel_doorno) as address) from hotels'
+//         )
+
+
+        // let data =  await Hotel
+        // .query() 
+        // .select('hotels.*')
+        // return data
+        // return await Hotel
+        // .query()
+        //     .from((up) => {
+        //         up.from((sub) => {   
+        //             sub.from((query) => {
+        //                 query.select('address', 'hotels.customer_id', 'hotels.hotel_name', 'hotels.id')
+        //                 .from('hotels')
+        //                 .join((subquery) => {
+        //                     subquery.from('hotels')
+        //                 .select('hotels.id as id', 'hotels.hotel_doorno as doorno', 'hotels.hotel_landmark', 'hotels.hotel_pincode')
+        //                 .as('address')
+        //             }, 'address.id', 'hotels.id')
+        //             .as('lap')
+        //             })
+        //             .as('data')
+        //         }).leftJoin('customers', 'data.customer_id', 'customers.customer_id')
+        //         .select('data.*', 'customers.customer_name')
+        //         .as('val')
+        //     })
+        //     .select(Database.raw('select row_to_json(val)').wrap('(', ')'))
+        // }
     
 }

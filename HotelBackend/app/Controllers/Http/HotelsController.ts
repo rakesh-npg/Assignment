@@ -2,7 +2,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Hotel from 'App/Models/Hotel'
 import HotelValidator from 'App/Validators/HotelValidator'
-
+import Customer from 'App/Models/Customer'
 // import { count } from 'rxjs'
 
 export default class HotelsController {
@@ -31,46 +31,24 @@ export default class HotelsController {
         await searchHotel.save() 
         return  this.read() 
     }
-    protected async innerRead() {
-        return  await Database
-        .from(
-            (query) => {query
-        .from('hotels')
-        .leftJoin('customers', 'hotels.customer_id', 'customers.customer_id')
-        .select('hotels.*')
-        .select('customers.customer_name')
-        .as('val')
-            })
-    }
-
-    protected async addressAdder(datas) {
-        let finalData = [] 
-        for(let i =0; i<datas.length;i++){
-
-            let address = {
-                "doorNo" : datas[i].hotel_doorno, 
-                "landmark": datas[i].hotel_landmark, 
-                "pincode" : datas[i].hotel_pincode
-            }
-
-            let completeData = {
-                "id": datas[i].id, 
-                "address": address, 
-                "customerId": datas[i].customer_id, 
-                "name":datas[i].hotel_name,
-                "customerName":datas[i].customer_name
-            }
-            finalData.push(completeData)
-        }
-        console.log(finalData)
-
-        return JSON.stringify(finalData)
-
-    }
+    
 
     public async read() {
-        let datas =  await this.innerRead() 
-        return this.addressAdder(datas) 
+        let data =  await Hotel.query()
+        .select('*')
+        .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
+        .join('customers', 'hotels.customer_id', 'customers.customer_id')
+        .then(d => d.map(h => {
+            const data = h.toJSON()
+            //console.log(h)
+            return {
+                ...data,
+                address: h.$extras.address
+                customerName: h.$extras.customer_name
+            }
+        }))
+        
+        return data
     }
 
     public async delete({request}:HttpContextContract) {
@@ -126,66 +104,77 @@ export default class HotelsController {
 
     public async search({request}:HttpContextContract) {
         let test = request.input('searchVal')
-        let data =  await Database
-        .from(
-            (query) => {query
-        .from('hotels')
-        .leftJoin('customers', 'hotels.customer_id', 'customers.customer_id')
-        .select('hotels.*')
-        .select('customers.customer_name')
-        .as('val')
-            })
+        let dataVal =  await Hotel.query()
         .select('*')
+        .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
         .where((query) => {
-            if(/\d/.test(test)){
-            query.where('table_id', test)
-            }
+            query.where('hotel_name', test)
         })
         .orWhere((query) => {
-            query.where('hotel_name','ilike',"%"+test)
-            
+            if(/\d/.test(test)){
+            query.where('hotel_pincode', test)
+            .orWhere('customer_id', test)
+            .orWhere('id', test)
+            }
         })
-        return this.addressAdder(data)
+        .then(d => d.map(h => {
+            const dataVal = h.toJSON()
+            return {
+                ...dataVal,
+                address: h.$extras.address
+                customerName: h.$extras.customer_name
+            }
+        }))
+
+        
+
+        return dataVal
 
     }
 
     public async sort({request}: HttpContextContract) {
         let type = request.input('sortType')
         let column = request.input('col')
-        console.log(column)
         if(column == 'name') column = 'hotel_name'
         else if(column == 'customerId') column = 'customer_id'
         else if(column == 'customerName') column = 'customer_name'
-        let data =   await Database
-        .from(
-            (query) => {query
-        .from('hotels')
-        .leftJoin('customers', 'hotels.customer_id', 'customers.customer_id')
-        .select('hotels.*')
-        .select('customers.customer_name')
-        .as('val')
-            })
-        //.orderBy('hotel_name', 'asc')
+        let dataVal =  await Hotel.query()
+        .select('*')
+        .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
+        .join('customers', 'hotels.customer_id', 'customers.customer_id')
         .orderBy(`${column}`, `${type}`)
-        return this.addressAdder(data)
+        .then(d => d.map(h => {
+            const dataVal = h.toJSON()
+            return {
+                ...dataVal,
+                address: h.$extras.address
+                customerName: h.$extras.customer_name
+            }
+        }))
 
-
+        return dataVal
+        
+        
     }
 
     public async test({request}: HttpContextContract) {
         
 
-        return await Database
-        .from(
-            (query) => {query
-        .from('hotels')
-        .leftJoin('customers', 'hotels.customer_id', 'customers.customer_id')
-        .select('hotels.*')
-        .select('customers.customer_name')
-        .as('val')
-            }).join('customers', 'val.customer_id', )
-    }
+        let data =  await Hotel.query()
+        .select('hotel_name', 'id')
+        .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
+        .then(d => d.map(h => {
+            const data = h.toJSON()
+            return {
+                ...data,
+                address: h.$extras.address
+            }
+        }))
 
-
+        return data
+        
+      
      
 }
+}
+

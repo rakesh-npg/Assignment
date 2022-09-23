@@ -20,11 +20,7 @@ export default class Hotel extends BaseModel {
   @column() 
   public customer_id:number
   
-  @afterFetch()
-  public static async processMarkdown(post) {
-    console.log(post)
-    return "test"
-  }
+
 
   // @beforeFetch() 
   // public static async test() {
