@@ -18,10 +18,10 @@
             </thead>
             <tbody>
                 <tr
-                v-for="data in tableData" :key="data.row_to_json.id">
+                v-for="data in tableData" :key="data.id">
                     <td v-for="column in tableHeaders" :key="column">
                     
-                        {{data.row_to_json[column]}}
+                        {{data[column]}}
 
                     <template v-if="column == 'edit/delete'">
                         <v-icon small @click="editData(data)">mdi-pencil</v-icon>
@@ -42,7 +42,7 @@
                         
                     <v-form
                     ref="form"
-                    v-model="valid"
+                    
                     lazy-validation
                     >
 

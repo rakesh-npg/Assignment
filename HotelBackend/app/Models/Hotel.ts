@@ -6,19 +6,19 @@ export default class Hotel extends BaseModel {
   public id: number
 
   @column() 
-  public hotel_name:string 
+  public hotelName:string 
 
   @column() 
-  public hotel_doorno:string 
+  public hotelDoorno:string 
 
   @column() 
-  public hotel_landmark:string 
+  public hotelLandmark:string 
 
   @column() 
-  public hotel_pincode:number 
+  public hotelPincode:number 
 
   @column() 
-  public customer_id:number
+  public customerId:number
   
 
 

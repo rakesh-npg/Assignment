@@ -7,13 +7,11 @@ import Hotel from 'App/Models/Hotel'
 
 export default class CustomersController {
     public async create({request}:HttpContextContract) {
-        console.log(request)
         const payload = await request.validate(CustomerValidator)
-        console.log('validation working')
         const newCustomer = new Customer() 
         newCustomer.customer_id = payload.customerId
+        newCustomer.customer_name = payload.customerName
         await newCustomer.save()
-        let data = this.test() 
         return Customer.all() 
         
     }
@@ -27,17 +25,22 @@ export default class CustomersController {
         return Customer.all() 
     }
 
-    public async read({request}:HttpContextContract) {
-        return await Database
+    public async read() {
+        let data = await Customer.query() 
         .from((query) =>
         query
         .from('customers')
-        .join('hotels', 'customers.customer_id', 'hotels.customer_id')
+        .leftJoin('hotels', 'customers.customer_id', 'hotels.customer_id')
         .select('customers.customer_id')
-        .count('customers.customer_id')
         .groupBy('customers.customer_id')
+        .count('hotels.customer_id')
         .as('query')
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
+        .then(d => d.map((h) => {
+            return Object.assign({}, h.$attributes, h.$extras)
+        }))
+
+        return data
         
         //return Customer.all() 
     }
@@ -51,7 +54,7 @@ export default class CustomersController {
         return Customer.all() 
     }
 
-    public async insertMany({request}:HttpContextContract) {
+    public async insertMany() {
         const newCustomer = await Customer.createMany([
             {
                 customer_name : "Jacob",
@@ -83,90 +86,60 @@ export default class CustomersController {
     public async search({request}:HttpContextContract) {
         let test = request.input('searchVal')
         console.log(test)
-        let a =  await Database
-        .from((subquery) =>{
-            subquery
+        //test = 'James'
+        let data = await Customer.query() 
         .from((query) =>
         query
         .from('customers')
-        .join('hotels', 'customers.customer_id', 'hotels.customer_id')
+        .leftJoin('hotels', 'customers.customer_id', 'hotels.customer_id')
         .select('customers.customer_id')
-        .count('customers.customer_id')
         .groupBy('customers.customer_id')
+        .count('hotels.customer_id')
         .as('query')
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
-        .as('subquery')
-        }).select('subquery.*')
         .where((query) => {
-           if(/\d/.test(test)){
-                query.where('table_id', test)
-                
-           }
-        })
-        .orWhere((query) => {
-            query.whereILike('customer_name',`%${test}%`)
+            if(/\d/.test(test)){
+                 query.where('table_id', test)
+            }
+         })
+         .orWhere((query) => {
+             query.whereILike('customer_name',`${test}%`)
+         
+         })
+        .then(d => d.map((h) => {
+            return Object.assign({}, h.$attributes, h.$extras)
+        }))
+        return data
         
-        })
-        console.log(a)
-
     }
 
     public async sort({request}: HttpContextContract) {
         let type = request.input('sortType')
         let column = request.input('col')
-        return await Database
-        .from((subquery) =>{
-            subquery
+
+        if(column == 'customer_id') column = 'query.customer_id'
+        else if(column == 'table_id') column = 'table_id'
+        else if(column == 'customer_name') column == 'query.customer_name'
+
+        let data = await Customer.query() 
         .from((query) =>
         query
         .from('customers')
-        .join('hotels', 'customers.customer_id', 'hotels.customer_id')
+        .leftJoin('hotels', 'customers.customer_id', 'hotels.customer_id')
         .select('customers.customer_id')
-        .count('customers.customer_id')
         .groupBy('customers.customer_id')
+        .count('hotels.customer_id')
         .as('query')
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
-        .as('subquery')
-        }).select('*')
-        
         .orderBy(`${column}`, `${type}`)
+        .then(d => d.map((h) => {
+            return Object.assign({}, h.$attributes, h.$extras)
+        }))
+        return data 
     }
 
     public async test() {
+        return Customer.all() 
+    }
 
-        return await Database.rawQuery(
-
-''
-        )
-//         return await Database.rawQuery(
-// 'select (select row_to_json(address) from (select hotels.hotel_landmark, hotels.hotel_doorno) as address) from hotels'
-//         )
-
-
-        // let data =  await Hotel
-        // .query() 
-        // .select('hotels.*')
-        // return data
-        // return await Hotel
-        // .query()
-        //     .from((up) => {
-        //         up.from((sub) => {   
-        //             sub.from((query) => {
-        //                 query.select('address', 'hotels.customer_id', 'hotels.hotel_name', 'hotels.id')
-        //                 .from('hotels')
-        //                 .join((subquery) => {
-        //                     subquery.from('hotels')
-        //                 .select('hotels.id as id', 'hotels.hotel_doorno as doorno', 'hotels.hotel_landmark', 'hotels.hotel_pincode')
-        //                 .as('address')
-        //             }, 'address.id', 'hotels.id')
-        //             .as('lap')
-        //             })
-        //             .as('data')
-        //         }).leftJoin('customers', 'data.customer_id', 'customers.customer_id')
-        //         .select('data.*', 'customers.customer_name')
-        //         .as('val')
-        //     })
-        //     .select(Database.raw('select row_to_json(val)').wrap('(', ')'))
-        // }
-    
 }

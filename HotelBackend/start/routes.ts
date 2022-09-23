@@ -51,5 +51,5 @@ Route.group(() => {
 }).prefix('/hotel')
 
 
-Route.get('/test', 'HotelsController.test')
+Route.get('/test', 'CustomersController.test')
 

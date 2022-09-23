@@ -11,11 +11,11 @@ export default class HotelsController {
         const payload = await request.validate(HotelValidator)
         console.log('validation working')
         const newHotel = new Hotel() 
-        newHotel.hotel_name = payload.hotelName 
-        newHotel.hotel_doorno = payload.hotelDoorno
-        newHotel.hotel_landmark = payload.hotelLandmark
-        newHotel.hotel_pincode = payload.hotelPincode
-        newHotel.customer_id = payload.customerId
+        newHotel.hotelName = payload.hotelName 
+        newHotel.hotelDoorno = payload.hotelDoorno
+        newHotel.hotelLandmark = payload.hotelLandmark
+        newHotel.hotelPincode = payload.hotelPincode
+        newHotel.customerId = payload.customerId
         await newHotel.save() 
         return this.read() 
         
@@ -23,11 +23,11 @@ export default class HotelsController {
     public async update({request}:HttpContextContract) {
         const payload = await request.validate(HotelValidator)
         let searchHotel = await Hotel.findByOrFail("id", request.input('id'))
-        searchHotel.hotel_name = payload.hotelName
-        searchHotel.hotel_doorno = payload.hotelDoorno
-        searchHotel.hotel_landmark = payload.hotelLandmark
-        searchHotel.hotel_pincode = payload.hotelPincode
-        searchHotel.customer_id = payload.customerId 
+        searchHotel.hotelName = payload.hotelName
+        searchHotel.hotelDoorno = payload.hotelDoorno
+        searchHotel.hotelLandmark = payload.hotelLandmark
+        searchHotel.hotelPincode = payload.hotelPincode
+        searchHotel.customerId = payload.customerId 
         await searchHotel.save() 
         return  this.read() 
     }
@@ -38,12 +38,12 @@ export default class HotelsController {
         .select('*')
         .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
         .join('customers', 'hotels.customer_id', 'customers.customer_id')
-        .then(d => d.map(h => {
+        .then(d => d.map((h) => {
             const data = h.toJSON()
             //console.log(h)
             return {
                 ...data,
-                address: h.$extras.address
+                address: h.$extras.address,
                 customerName: h.$extras.customer_name
             }
         }))
@@ -61,39 +61,39 @@ export default class HotelsController {
     public async insertMany({request}:HttpContextContract) {
         const newHotel = await Hotel.createMany([
             {
-                "hotel_name": "McDonalds", 
-                "hotel_doorno": "13B", 
-                "hotel_landmark": "Satyabama",
-                "hotel_pincode" : 600100, 
-                "customer_id": 2, 
+                "hotelName": "McDonalds", 
+                "hotelDoorno": "13B", 
+                "hotelLandmark": "Satyabama",
+                "hotelPincode" : 600100, 
+                "customerId": 2, 
             },
             {
-                "hotel_name": "Thalpakatti", 
-                "hotel_doorno": "12A", 
-                "hotel_landmark": "NGP",
-                "hotel_pincode" : 600101, 
-                "customer_id": 2, 
+                "hotelName": "Thalpakatti", 
+                "hotelDoorno": "12A", 
+                "hotelLandmark": "NGP",
+                "hotelPincode" : 600101, 
+                "customerId": 2, 
             },
             {
-                "hotel_name": "10Muffins", 
-                "hotel_doorno": "35C", 
-                "hotel_landmark": "KamalHouse",
-                "hotel_pincode" : 600028, 
-                "customer_id": 3, 
+                "hotelName": "10Muffins", 
+                "hotelDoorno": "35C", 
+                "hotelLandmark": "KamalHouse",
+                "hotelPincode" : 600028, 
+                "customerId": 3, 
             },
             {
-                "hotel_name": "10Muffins", 
-                "hotel_doorno": "16", 
-                "hotel_landmark": "IndiaBUlls",
-                "hotel_pincode" : 600100, 
-                "customer_id": 4, 
+                "hotelName": "10Muffins", 
+                "hotelDoorno": "16", 
+                "hotelLandmark": "IndiaBUlls",
+                "hotelPincode" : 600100, 
+                "customerId": 4, 
             },
             {
-                "hotel_name": "Nicky", 
-                "hotel_doorno": "1B", 
-                "hotel_landmark": "Hiranandini",
-                "hotel_pincode" : 600099, 
-                "customer_id": 4, 
+                "hotelName": "Nicky", 
+                "hotelDoorno": "1B", 
+                "hotelLandmark": "Hiranandini",
+                "hotelPincode" : 600099, 
+                "customerId": 4, 
             },
             
         ])
@@ -107,13 +107,14 @@ export default class HotelsController {
         let dataVal =  await Hotel.query()
         .select('*')
         .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
+        .join('customers', 'hotels.customer_id', 'customers.customer_id')
         .where((query) => {
-            query.where('hotel_name', test)
+            query.whereILike('hotelName', `${test}%`)
         })
         .orWhere((query) => {
             if(/\d/.test(test)){
-            query.where('hotel_pincode', test)
-            .orWhere('customer_id', test)
+            query.where('hotelPincode', test)
+            .orWhere('customerId', test)
             .orWhere('id', test)
             }
         })
@@ -135,8 +136,8 @@ export default class HotelsController {
     public async sort({request}: HttpContextContract) {
         let type = request.input('sortType')
         let column = request.input('col')
-        if(column == 'name') column = 'hotel_name'
-        else if(column == 'customerId') column = 'customer_id'
+        if(column == 'name') column = 'hotelName'
+        else if(column == 'customerId') column = 'customerId'
         else if(column == 'customerName') column = 'customer_name'
         let dataVal =  await Hotel.query()
         .select('*')
@@ -161,8 +162,8 @@ export default class HotelsController {
         
 
         let data =  await Hotel.query()
-        .select('hotel_name', 'id')
-        .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
+        .select('hotelName', 'id')
+        .select(Database.raw(`json_build_object('doorNo', hotelDoorno, 'landMark', hotelLandmark, 'pincode', hotelPincode) as address`))
         .then(d => d.map(h => {
             const data = h.toJSON()
             return {

@@ -206,11 +206,11 @@ export default{
         editData(data) {
             console.log("workinf");
             console.log(data)
-            this.formData.customerId = data.customerId
+            this.formData.customerId = data.customer_id
             this.formData.id = data.id
-            this.formData.hotelName = data.name
+            this.formData.hotelName = data.hotel_name
             this.formData.hotelDoorno  = data.address.doorNo
-            this.formData.hotelLandmark  = data.address.landmark 
+            this.formData.hotelLandmark  = data.address.landMark
             this.formData.hotelPincode = data.address.pincode
             this.flagData.formFlag = true;
             this.flagData.editForm = true;
