@@ -100,7 +100,8 @@ export default{
             }, 
             tableHeaders: ["table_id", "customer_id", "customer_name", "count", "edit/delete"], 
             tableData: [
-            ]
+            ], 
+            appKeyHeader: {headers : {appkey : process.env.VUE_APP_KEY}}
 
         }
     },
@@ -113,7 +114,7 @@ export default{
         async validateForm() {
             this.$refs.form.validate() 
             console.log(this.formData)
-            await axios.post('http://127.0.0.1:3333/cust/create', this.formData)
+            await axios.post('http://127.0.0.1:3333/cust/create', this.formData, this.appKeyHeader)
             .then((resposne) => console.log(resposne))
             this.flagData.formFlag = false 
             this.read() 
@@ -121,7 +122,7 @@ export default{
         },
 
         async read() {
-            await axios.get('http://127.0.0.1:3333/cust/read').then((response) => {
+            await axios.get('http://127.0.0.1:3333/cust/read', this.appKeyHeader).then((response) => {
                 console.log(response)
                 this.tableData = response.data
             })
@@ -130,7 +131,7 @@ export default{
         async editForm() {
             this.$refs.form.validate() 
             console.log('edition done')
-            await axios.post('http://127.0.0.1:3333/cust/update', this.formData)
+            await axios.post('http://127.0.0.1:3333/cust/update', this.formData, this.appKeyHeader)
             .then((resposne) => console.log(resposne))
             this.$refs.form.reset() 
             this.flagData.formFlag = false 
@@ -140,7 +141,7 @@ export default{
 
         async deleteData(data) {
             console.log(data['table_id'])
-            await axios.delete(`http://127.0.0.1:3333/cust/delete/${data["table_id"]}`)
+            await axios.delete(`http://127.0.0.1:3333/cust/delete/${data["table_id"]}`, this.appKeyHeader)
             this.read() 
         },
         async sortData(i, head) {
@@ -150,7 +151,7 @@ export default{
                 col: head
             } 
             console.log(tempData)
-            await axios.post('http://127.0.0.1:3333/cust/sort', tempData).then((resposne) => {
+            await axios.post('http://127.0.0.1:3333/cust/sort', tempData, this.appKeyHeader).then((resposne) => {
                 console.log(resposne)
                 this.tableData = resposne.data 
             })
@@ -165,7 +166,7 @@ export default{
                 searchVal : data
             }
 
-            await axios.post('http://127.0.0.1:3333/cust/search', tempData).then((response) => {
+            await axios.post('http://127.0.0.1:3333/cust/search', tempData, this.appKeyHeader).then((response) => {
                 this.tableData = response.data
             })
         }, 
