@@ -8,6 +8,6 @@ export default class Customer extends BaseModel {
   @column() 
   public customer_id: number 
 
-  @column() 
+  @column()   
   public customer_name: string 
 }

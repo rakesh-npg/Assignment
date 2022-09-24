@@ -37,6 +37,7 @@ Route.group(() => {
   Route.post('/sort', "CustomersController.sort")
 }).prefix('/cust') 
 
+Route.get('/insert', 'HotelsController.insertMany')
 
 Route.group(() => {
   

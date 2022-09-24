@@ -1,8 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Database from '@ioc:Adonis/Lucid/Database'
 import Customer from 'App/Models/Customer'
 import CustomerValidator from 'App/Validators/CustomerValidator'
-import Hotel from 'App/Models/Hotel'
 
 
 export default class CustomersController {
@@ -36,13 +34,14 @@ export default class CustomersController {
         .count('hotels.customer_id')
         .as('query')
         ) .join('customers', 'query.customer_id', 'customers.customer_id')
-        .then(d => d.map((h) => {
+        //  .orderBy('query.count', 'asc')
+          .then(d => d.map((h) => {
             return Object.assign({}, h.$attributes, h.$extras)
         }))
 
+
         return data
         
-        //return Customer.all() 
     }
 
     public async delete({request}:HttpContextContract) {

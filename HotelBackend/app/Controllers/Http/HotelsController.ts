@@ -38,6 +38,7 @@ export default class HotelsController {
         .select('*')
         .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
         .join('customers', 'hotels.customer_id', 'customers.customer_id')
+        .orderBy('customers.customer_name', 'desc')
         .then(d => d.map((h) => {
             const data = h.toJSON()
             //console.log(h)
@@ -104,19 +105,21 @@ export default class HotelsController {
 
     public async search({request}:HttpContextContract) {
         let test = request.input('searchVal')
-        let dataVal =  await Hotel.query()
+        //test ='600100'
+        let data =  await Hotel.query()
         .select('*')
         .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))
         .join('customers', 'hotels.customer_id', 'customers.customer_id')
         .where((query) => {
-            query.whereILike('hotelName', `${test}%`)
-        })
-        .orWhere((query) => {
             if(/\d/.test(test)){
-            query.where('hotelPincode', test)
-            .orWhere('customerId', test)
+                //console.log('test')
+            query.where('hotels.hotel_pincode', test)
+            .orWhere('hotels.customer_id', test) 
             .orWhere('id', test)
             }
+        })
+        .orWhere((query) => {
+            query.whereILike('hotelName', `${test}%`)
         })
         .then(d => d.map(h => {
             const dataVal = h.toJSON()
@@ -129,7 +132,7 @@ export default class HotelsController {
 
         
 
-        return dataVal
+        return data
 
     }
 
@@ -137,8 +140,10 @@ export default class HotelsController {
         let type = request.input('sortType')
         let column = request.input('col')
         if(column == 'name') column = 'hotelName'
-        else if(column == 'customerId') column = 'customerId'
-        else if(column == 'customerName') column = 'customer_name'
+        else if(column == 'customer_id') column = 'hotels.customer_id'
+        else if(column == 'customerName') column = 'customers.customer_name'
+        else if(column == 'address')  column = 'hotels.hotel_pincode'
+        console.log(column)
         let dataVal =  await Hotel.query()
         .select('*')
         .select(Database.raw(`json_build_object('doorNo', hotel_doorno, 'landMark', hotel_landmark, 'pincode', hotel_pincode) as address`))

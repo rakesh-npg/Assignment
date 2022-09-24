@@ -32,7 +32,7 @@
 
                     <template v-if="column == 'address'">
                         DoorNo {{ data[column]['doorNo']}}
-                        Landmark {{ data[column]['landmark']}}
+                        Landmark {{ data[column]['landMark']}}
                         pincode{{ data[column]['pincode']}}
                     </template>
                 </td>
@@ -50,7 +50,6 @@
                         
                     <v-form
                     ref="form"
-                    v-model="valid"
                     lazy-validation
                     >
 
@@ -144,7 +143,7 @@ export default{
 
     methods: {
         async read() {
-            axios.get('http://127.0.0.1:3333/hotel/read')
+            await axios.get('http://127.0.0.1:3333/hotel/read')
             .then((response) =>{
             console.log(response)
             this.tableData = response.data})
